@@ -42,28 +42,41 @@ io.on('connection', (socket) => {
     socket.on("requestOnlineUsers", () => {
         socket.emit("getOnlineUsers", Object.keys(userSocketmap));
     });
-    socket.on(
-        "typing",
-        ({ senderId, receiverId }) => {
+    socket.on("typing", ({ senderId, receiverId }) => {
+        const sid = senderId ? String(senderId) : "";
+        const rid = receiverId ? String(receiverId) : "";
+        if (!sid || !rid) return;
 
-            typingUsers[senderId] = {
-                receiverId,
-                at: Date.now(),
-            };
+        typingUsers[sid] = {
+            receiverId: rid,
+            at: Date.now(),
+        };
 
-            io.emit("userTyping", {
-                senderId,
-                receiverId,
-            });
+        io.emit("userTyping", {
+            senderId: sid,
+            receiverId: rid,
+        });
 
-            const receiverSocketId =
-                getReciverSocketId(receiverId);
-
-            if (receiverSocketId) {
-                io.to(receiverSocketId).emit("typing", { senderId });
-            }
+        const receiverSocketId = getReciverSocketId(rid);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("typing", { senderId: sid });
         }
-    );
+    });
+
+    socket.on("stopTyping", ({ senderId, receiverId }) => {
+        const sid = senderId ? String(senderId) : "";
+        const rid = receiverId ? String(receiverId) : "";
+        if (!sid || !rid) return;
+
+        delete typingUsers[sid];
+
+        io.emit("userTypingStop", { senderId: sid, receiverId: rid });
+
+        const receiverSocketId = getReciverSocketId(rid);
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("stopTyping", { senderId: sid });
+        }
+    });
 
     socket.on("chatActive", ({ userId, chattingWith }) => {
         socket.data.activeChat = chattingWith;

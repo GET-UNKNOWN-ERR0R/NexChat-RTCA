@@ -27,10 +27,10 @@ const Home = () => {
 
     return (
         <div
-            className="flex justify-between w-full md:max-w-[90%] lg:max-w-[82%] xl:max-w-[78%] h-[95vh] md:h-[92vh] rounded-3xl border border-white/10 bg-[#060b10]/90 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden ring-1 ring-emerald-500/10"
+            className="flex justify-between w-full md:max-w-[90%] lg:max-w-[82%] xl:max-w-[78%] h-full md:h-[92vh] rounded-none md:rounded-3xl border-0 md:border border-white/10 bg-[#060b10]/90 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.5)] overflow-hidden ring-0 md:ring-1 ring-emerald-500/10 min-h-0"
         >
             <div
-                className={`w-full md:w-87.5 py-2 md:flex ${isSidebarVisible ? '' : 'hidden'
+                className={`w-full md:w-87.5 py-2 md:flex h-full min-h-0 overflow-hidden ${isSidebarVisible ? '' : 'hidden'
                     }`}
             >
                 <Sidebar
@@ -61,7 +61,7 @@ const Home = () => {
             ></div>
 
             <div
-                className={`flex-auto ${(selectedUser || showProfile) ? '' : 'hidden md:flex'
+                className={`flex-auto min-h-0 overflow-hidden ${(selectedUser || showProfile) ? '' : 'hidden md:flex'
                     } bg-[#0b141a]`}
             >
                 {

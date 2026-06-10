@@ -6,6 +6,7 @@ import { IoSend, IoImage, IoVideocam, IoDocument, IoLocationSharp } from "react-
 const ChatInput = ({
     sendData,
     onChange,
+    onTyping,
     onSubmit,
     showEmoji,
     setShowEmoji,
@@ -99,6 +100,7 @@ const ChatInput = ({
                             ref={inputRef}
                             value={sendData}
                             onChange={onChange}
+                            onInput={onTyping}
                             type="text"
                             placeholder="Type a message..."
                             className="w-full bg-transparent outline-none text-white placeholder:text-slate-500 text-[15px]"

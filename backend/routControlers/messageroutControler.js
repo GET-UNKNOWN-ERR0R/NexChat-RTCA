@@ -366,6 +366,8 @@ export const sendVoiceMessage =
                 voiceMessage._id
             );
 
+            chats.updatedAt = Date.now();
+
             await chats.save();
 
             await emitNewMessage(reciverId, senderId, voiceMessage);

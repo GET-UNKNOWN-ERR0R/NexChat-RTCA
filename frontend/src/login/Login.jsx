@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify'
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
+import { verifyAuthSession } from '../utils/authSession';
 import { IoMail, IoLockClosed, IoLogIn } from 'react-icons/io5';
 
 const Login = () => {
@@ -27,6 +28,11 @@ const Login = () => {
                 return;
             }
             toast.success(data.message || "Welcome back!")
+            const sessionReady = await verifyAuthSession();
+            if (!sessionReady) {
+                toast.error("Session could not be established. Please try again.");
+                return;
+            }
             localStorage.setItem('chatapp', JSON.stringify(data));
             setAuthUser(data)
             navigate('/')

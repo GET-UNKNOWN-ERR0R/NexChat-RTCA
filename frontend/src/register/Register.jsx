@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
+import { verifyAuthSession } from '../utils/authSession';
 import { IoPerson, IoAt, IoMail, IoLockClosed, IoPersonAdd } from 'react-icons/io5';
 
 const Register = () => {
@@ -39,6 +40,11 @@ const Register = () => {
                 return;
             }
             toast.success("Account created! Welcome to NexChat")
+            const sessionReady = await verifyAuthSession();
+            if (!sessionReady) {
+                toast.error("Session could not be established. Please try signing in.");
+                return;
+            }
             localStorage.setItem('chatapp', JSON.stringify(data))
             setAuthUser(data)
             navigate('/')
@@ -60,7 +66,7 @@ const Register = () => {
             footerLabel="Sign in"
         >
             <form onSubmit={handelSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="col-span-2">
                         <label className="text-slate-300 text-xs font-medium mb-1.5 block">Full Name</label>
                         <div className="relative">

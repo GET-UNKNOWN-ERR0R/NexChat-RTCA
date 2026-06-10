@@ -33,6 +33,7 @@ const Sidebar = ({ onSelectUser, openProfile, onOpenUserProfile, showProfile }) 
     const [uploading, setUploading] = useState(false);
 
     const fileInputRef = useRef(null);
+    const typingTimersRef = useRef({});
 
     const { setSelectedConversation, activeChatId } = userConversation();
     const { onlineUser, socket } = useSocketContext();
@@ -235,14 +236,34 @@ const Sidebar = ({ onSelectUser, openProfile, onOpenUserProfile, showProfile }) 
             if (String(receiverId) !== String(authUser._id)) return;
             if (String(activeChatId) === String(senderId)) return;
 
-            setTypingUsers((prev) => ({ ...prev, [String(senderId)]: true }));
-            setTimeout(() => {
+            const key = String(senderId);
+            setTypingUsers((prev) => ({ ...prev, [key]: true }));
+
+            if (typingTimersRef.current[key]) {
+                clearTimeout(typingTimersRef.current[key]);
+            }
+            typingTimersRef.current[key] = setTimeout(() => {
                 setTypingUsers((prev) => {
                     const copy = { ...prev };
-                    delete copy[String(senderId)];
+                    delete copy[key];
                     return copy;
                 });
-            }, 2000);
+                delete typingTimersRef.current[key];
+            }, 2500);
+        };
+
+        const handleStopTyping = ({ senderId, receiverId }) => {
+            if (String(receiverId) !== String(authUser._id)) return;
+            const key = String(senderId);
+            if (typingTimersRef.current[key]) {
+                clearTimeout(typingTimersRef.current[key]);
+                delete typingTimersRef.current[key];
+            }
+            setTypingUsers((prev) => {
+                const copy = { ...prev };
+                delete copy[key];
+                return copy;
+            });
         };
 
         const handleProfileUpdated = (updated) => {
@@ -277,6 +298,7 @@ const Sidebar = ({ onSelectUser, openProfile, onOpenUserProfile, showProfile }) 
         socket?.on("chatCleared", handleChatCleared);
         socket?.on("chatUserRestored", handleChatUserRestored);
         socket?.on("userTyping", handleTyping);
+        socket?.on("userTypingStop", handleStopTyping);
         socket?.on("profileUpdated", handleProfileUpdated);
         socket?.on("accountDeleted", handleAccountDeleted);
         socket?.on("userBlocked", handleUserBlocked);
@@ -288,6 +310,7 @@ const Sidebar = ({ onSelectUser, openProfile, onOpenUserProfile, showProfile }) 
             socket?.off("chatCleared", handleChatCleared);
             socket?.off("chatUserRestored", handleChatUserRestored);
             socket?.off("userTyping", handleTyping);
+            socket?.off("userTypingStop", handleStopTyping);
             socket?.off("profileUpdated", handleProfileUpdated);
             socket?.off("accountDeleted", handleAccountDeleted);
             socket?.off("userBlocked", handleUserBlocked);
@@ -435,7 +458,7 @@ const Sidebar = ({ onSelectUser, openProfile, onOpenUserProfile, showProfile }) 
 
 
     return (
-        <div className='h-full w-full flex flex-col bg-[#0b141a] px-3 py-3 border-r border-white/5'>
+        <div className='h-full w-full flex flex-col bg-[#0b141a] px-3 py-3 border-r border-white/5 min-h-0 overflow-hidden'>
 
 
             <div className='mb-3 px-1'>

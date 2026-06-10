@@ -13,6 +13,7 @@ import MessageBubble from './chat/MessageBubble';
 import ChatInput from './chat/ChatInput';
 import AttachmentPreview from './chat/AttachmentPreview';
 import VoicePreview from './chat/VoicePreview';
+import { emitTyping, clearTypingEmitter } from '../../utils/typingEmitter';
 
 const getReplyPreview = (msg) => {
     if (!msg) return "";
@@ -41,6 +42,7 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
 
     const lastMessageRef = useRef();
     const messagesContainerRef = useRef();
+    const typingTimerRef = useRef(null);
     const prevConversationRef = useRef(null);
     const mediaRecorderRef = useRef(null);
     const audioChunksRef = useRef([]);
@@ -93,11 +95,26 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
         const handleTyping = ({ senderId }) => {
             if (String(senderId) !== String(selectedConversation?._id)) return;
             setTyping(true);
-            setTimeout(() => setTyping(false), 1500);
+            if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+            typingTimerRef.current = setTimeout(() => setTyping(false), 2500);
         };
+
+        const handleStopTyping = ({ senderId }) => {
+            if (String(senderId) !== String(selectedConversation?._id)) return;
+            if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+            setTyping(false);
+        };
+
         socket?.on("typing", handleTyping);
-        return () => socket?.off("typing", handleTyping);
+        socket?.on("stopTyping", handleStopTyping);
+        return () => {
+            socket?.off("typing", handleTyping);
+            socket?.off("stopTyping", handleStopTyping);
+            if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+        };
     }, [socket, selectedConversation?._id]);
+
+    useEffect(() => () => clearTypingEmitter(), []);
 
     useEffect(() => {
         if (!selectedConversation?._id || !authUser?._id) return;
@@ -519,7 +536,7 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
     }
 
     return (
-        <div className="h-full flex flex-col bg-[#0b141a] relative">
+        <div className="h-full flex flex-col bg-[#0b141a] relative overflow-hidden">
             <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%23ffffff%22 fill-opacity=%221%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]" />
 
             <ChatHeader
@@ -536,7 +553,7 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
 
             <div
                 ref={messagesContainerRef}
-                className="flex-1 overflow-y-auto px-4 py-4 space-y-3 relative z-10"
+                className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 space-y-3 relative z-10 min-h-0"
                 onClick={() => setMenuMessageId(null)}
             >
                 {loading && (
@@ -582,10 +599,10 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
                 sendData={sendData}
                 onChange={(e) => {
                     setSendData(e.target.value);
-                    socket?.emit("typing", {
-                        senderId: authUser._id,
-                        receiverId: selectedConversation._id,
-                    });
+                    emitTyping(socket, authUser._id, selectedConversation._id);
+                }}
+                onTyping={() => {
+                    emitTyping(socket, authUser._id, selectedConversation._id);
                 }}
                 onSubmit={handelSubmit}
                 showEmoji={showEmoji}
@@ -616,8 +633,8 @@ const MessageContainer = ({ onBackUser, onOpenProfile }) => {
             />
 
             {showCamera && (
-                <div className="fixed inset-0 z-70 bg-black/90 flex items-center justify-center p-4">
-                    <div className="bg-[#1a2332] rounded-2xl p-4 w-full max-w-md border border-white/10">
+                <div className="fixed inset-0 z-[70] bg-black/90 flex items-end md:items-center justify-center p-0 md:p-4">
+                    <div className="bg-[#1a2332] rounded-t-2xl md:rounded-2xl p-3 md:p-4 w-full max-w-md border border-white/10">
                         <video ref={videoRef} autoPlay playsInline muted className="w-full rounded-xl aspect-video object-cover bg-black" />
                         <canvas ref={canvasRef} className="hidden" />
                         <div className="flex gap-3 mt-4">

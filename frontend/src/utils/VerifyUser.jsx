@@ -15,13 +15,14 @@ export const VerifyUser = () => {
 
         let cancelled = false;
 
-        const verifySession = async (retriesLeft = 1) => {
+        const verifySession = async (retriesLeft = 4) => {
             try {
                 await axios.get("/api/user/chatlist");
                 if (!cancelled) setChecking(false);
             } catch {
                 if (retriesLeft > 0) {
-                    await new Promise((resolve) => setTimeout(resolve, 400));
+                    const delay = 450 * (5 - retriesLeft);
+                    await new Promise((resolve) => setTimeout(resolve, delay));
                     if (!cancelled) return verifySession(retriesLeft - 1);
                     return;
                 }
