@@ -20,6 +20,12 @@ if (process.env.NODE_ENV === "production") {
     app.set("trust proxy", 1);
 }
 
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL,
+        credentials: true,
+    })
+);
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(cookieParser())
