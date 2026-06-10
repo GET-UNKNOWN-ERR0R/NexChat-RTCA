@@ -28,7 +28,7 @@ app.use('/api/auth', authRouter)
 app.use('/api/message', messageRouter)
 app.use('/api/user', userRouter)
 
-app.use(express.static(path.join(__dirname, "/frontend/dist")))
+// app.use(express.static(path.join(__dirname, "/frontend/dist")))
 
 app.use(
     "/uploads",
@@ -41,9 +41,9 @@ app.use(
 );
 
 
-app.use((req, res) => {
-    res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"))
-})
+// app.use((req, res) => {
+//     res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"))
+// })
 
 const PORT = process.env.PORT || 3000
 
