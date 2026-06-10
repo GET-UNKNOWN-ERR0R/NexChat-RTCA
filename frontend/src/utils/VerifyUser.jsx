@@ -15,11 +15,16 @@ export const VerifyUser = () => {
 
         let cancelled = false;
 
-        const verifySession = async () => {
+        const verifySession = async (retriesLeft = 1) => {
             try {
                 await axios.get("/api/user/chatlist");
                 if (!cancelled) setChecking(false);
             } catch {
+                if (retriesLeft > 0) {
+                    await new Promise((resolve) => setTimeout(resolve, 400));
+                    if (!cancelled) return verifySession(retriesLeft - 1);
+                    return;
+                }
                 if (!cancelled) {
                     localStorage.removeItem("chatapp");
                     setAuthUser(null);

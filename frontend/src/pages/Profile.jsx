@@ -97,9 +97,9 @@ const Profile = ({ closeProfile, viewUser = null }) => {
 
     const deleteAccount = async () => {
 
-        const { value: password } = window.prompt(
+        const password = window.prompt(
             "Enter your password to permanently delete your account:"
-        ) || {};
+        );
 
         if (!password) return;
 

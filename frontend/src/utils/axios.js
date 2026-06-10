@@ -10,14 +10,14 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error?.response?.status === 401) {
-            const isAuthRoute = error.config?.url?.includes("/api/auth/login")
-                || error.config?.url?.includes("/api/auth/register");
+            const requestUrl = error.config?.url || "";
+            const isAuthRoute = requestUrl.includes("/api/auth/login")
+                || requestUrl.includes("/api/auth/register")
+                || requestUrl.includes("/api/auth/account");
 
             if (!isAuthRoute && typeof window !== "undefined") {
                 localStorage.removeItem("chatapp");
-                if (!window.location.pathname.startsWith("/login")) {
-                    window.location.href = "/login";
-                }
+                window.dispatchEvent(new CustomEvent("auth:session-expired"));
             }
         }
         return Promise.reject(error);
