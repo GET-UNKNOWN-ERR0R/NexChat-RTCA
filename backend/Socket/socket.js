@@ -1,28 +1,19 @@
-import { Server } from 'socket.io';
-import http from 'http';
-import express from 'express';
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
 import User from "../Models/userModels.js";
+import { corsOriginCallback } from "../utils/corsOrigins.js";
+
 const app = express();
 
 const server = http.createServer(app);
-const allowedOrigins = [
-    "http://localhost:5173",
-    process.env.CLIENT_URL,
-    process.env.FRONTEND_URL,
-].filter(Boolean);
 
 const io = new Server(server, {
     cors: {
-        origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                callback(null, false);
-            }
-        },
+        origin: corsOriginCallback,
         methods: ["GET", "POST"],
         credentials: true,
-    }
+    },
 });
 
 const typingUsers = {};

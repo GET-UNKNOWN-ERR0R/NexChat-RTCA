@@ -3,6 +3,7 @@ import Message from "../Models/messageSchema.js";
 import Conversation from "../Models/conversationModels.js";
 import bcryptjs from 'bcryptjs'
 import jwtToken from '../utils/jwtwebToken.js'
+import { getAuthCookieOptions } from "../utils/cookieOptions.js";
 import {
     uploadToCloudinary,
     deleteFromCloudinary
@@ -102,12 +103,7 @@ export const userLogin = async (req, res) => {
 export const userLogOut = async (req, res) => {
 
     try {
-        res.cookie("jwt", '', {
-            maxAge: 0,
-            httpOnly: true,
-            sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-            secure: process.env.NODE_ENV === "production",
-        })
+        res.cookie("jwt", "", getAuthCookieOptions(0))
         res.status(200).send({ success: true, message: "User LogOut" })
 
     } catch (error) {
@@ -398,12 +394,7 @@ export const deleteAccount =
 
             io.emit("accountDeleted", { userId });
 
-            res.cookie("jwt", "", {
-                maxAge: 0,
-                httpOnly: true,
-                sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-                secure: process.env.NODE_ENV === "production",
-            });
+            res.cookie("jwt", "", getAuthCookieOptions(0));
 
             res.status(200).send({
                 success: true,
