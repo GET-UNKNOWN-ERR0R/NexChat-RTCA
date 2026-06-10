@@ -6,6 +6,7 @@ import messageRouter from './rout/messageRout.js'
 import userRouter from './rout/userRout.js'
 import cookieParser from "cookie-parser";
 import path from "path";
+import cors from "cors";
 
 
 import dns from 'dns';
